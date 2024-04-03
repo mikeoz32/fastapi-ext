@@ -15,7 +15,7 @@ def create_main_engine() -> AsyncEngine:
 
 
 async def sqla_init() -> SqlaLifespan:
-    return SqlaLifespan(engine=await create_main_engine())
+    return SqlaLifespan(engine=create_main_engine())
 
 
 async def sqla_dispose(lifespan: SqlaLifespan):

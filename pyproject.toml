@@ -19,6 +19,10 @@ sqlalchemy = "^2.0.29"
 [tool.poetry.group.server.dependencies]
 uvicorn = "^0.29.0"
 
+
+[tool.poetry.group.test.dependencies]
+aiosqlite = "^0.20.0"
+
 [tool.poetry.extras]
 sqla = ["sqlalchemy"]
 

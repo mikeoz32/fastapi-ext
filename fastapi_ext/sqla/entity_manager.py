@@ -23,6 +23,14 @@ class AsyncEntityManager:
         result = await self.execute_query(statement)
         return result.unique().scalar_one_or_none()
 
+    async def delete(self, entity):
+        self.session.delete(entity)
+        try:
+            await self.session.commit()
+        except Exception as e:
+            await self.session.rollback()
+            raise e
+
     async def save(self, entity):
         self.session.add(entity)
         try:

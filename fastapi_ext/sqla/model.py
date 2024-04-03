@@ -9,6 +9,9 @@ UTC = timezone.utc
 def now_utc():
     return datetime.now(UTC)
 
+class Base(DeclarativeBase):
+    ...
+
 class BaseModel:
     ...
 
@@ -59,6 +62,7 @@ M_ID = TypeVar("M_ID", bound=IDMixin)
 M_TS = TypeVar("M_TS", bound=TimestamableMixin)
 
 __all__ = [
+    "Base",
     "IDMixin",
     "CreatedAtMixin",
     "UpdatedAtMixin",
