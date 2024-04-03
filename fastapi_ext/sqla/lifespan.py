@@ -1,12 +1,13 @@
-from typing import TypedDict
+from typing import Any, TypedDict
 from sqlalchemy.ext.asyncio import AsyncEngine
 from fastapi_ext.settings import settings
 
-from fastapi_ext.sqla.engine import create_engine
+from fastapi_ext.sqla.engine import create_async_session_maker, create_engine
 
 
 class SqlaLifespan(TypedDict):
     engine: AsyncEngine
+    main_async_session_maker: Any
 
 
 def create_main_engine() -> AsyncEngine:
@@ -14,8 +15,13 @@ def create_main_engine() -> AsyncEngine:
     return create_engine(settings.sqla.database_uri)
 
 
+def create_main_async_session_maker(engine: AsyncEngine):
+    return create_async_session_maker(engine)
+
 async def sqla_init() -> SqlaLifespan:
-    return SqlaLifespan(engine=create_main_engine())
+    engine = create_main_engine()
+    session_maker = create_main_async_session_maker(engine)
+    return SqlaLifespan(engine=create_main_engine(), main_async_session_maker=session_maker)
 
 
 async def sqla_dispose(lifespan: SqlaLifespan):

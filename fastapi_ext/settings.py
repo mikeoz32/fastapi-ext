@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     title: str = "FastAPIExtApp"
 
     sqla: Optional[SqlaSettings] = None
+
+    apps: List[str] = []
 
     model_config = SettingsConfigDict(json_file=["config.json", "config.dev.json", "config.default.json"])
 

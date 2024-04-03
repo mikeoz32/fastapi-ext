@@ -37,7 +37,7 @@ class BaseRepository(Generic[M]):
     def create(self, **kwargs) -> M:
         return self.model(**kwargs)
 
-    def delete(self, model: M):
+    async def delete(self, model: M):
         return await self.entity_manager.delete(model)
 
     # async def find(

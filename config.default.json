@@ -1,6 +1,9 @@
 {
   "src": "example",
   "title": "Example FastAPIExt Application",
+  "apps":[
+    "fastapi_ext.auth"
+  ],
   "sqla": {
     "database_uri": "sqlite+aiosqlite://"
   }
