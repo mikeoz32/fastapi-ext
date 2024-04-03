@@ -1,6 +1,7 @@
 from typing import Annotated
 from sqlalchemy.orm import Mapped, mapped_column
 from fastapi_ext.sqla.model import Base, CreatedUpdatedAtMixin, IDMixin
+from fastapi_ext.sqla.schema import AutoSchemaMixin
 
 """
 # Authentication module
@@ -12,7 +13,7 @@ authentication, like email, username, password_hash/salt and links to OpenID ide
 """
 
 
-class Identity(IDMixin, CreatedUpdatedAtMixin, Base):
+class Identity(IDMixin, CreatedUpdatedAtMixin, AutoSchemaMixin, Base):
     __tablename__ = "identity"
 
     email: Mapped[Annotated[str, mapped_column(index=True)]]
