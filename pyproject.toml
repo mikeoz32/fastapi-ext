@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "fastapi-ext"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.110.0"
+pydantic = "^2.6.4"
+pydantic-settings = "^2.2.1"
+
+
+[tool.poetry.group.sqla.dependencies]
+sqlalchemy = "^2.0.29"
+
+
+[tool.poetry.group.server.dependencies]
+uvicorn = "^0.29.0"
+
+[tool.poetry.extras]
+sqla = ["sqlalchemy"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
