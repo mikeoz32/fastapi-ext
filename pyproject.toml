@@ -2,7 +2,7 @@
 name = "fastapi-ext"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Mike Oz<kozloffsky@hotmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -10,6 +10,7 @@ python = "^3.9"
 fastapi = "^0.110.0"
 pydantic = "^2.6.4"
 pydantic-settings = "^2.2.1"
+email-validator = "^2.1.1"
 
 
 [tool.poetry.group.sqla.dependencies]
@@ -23,8 +24,13 @@ uvicorn = "^0.29.0"
 [tool.poetry.group.test.dependencies]
 aiosqlite = "^0.20.0"
 
+
+[tool.poetry.group.auth.dependencies]
+pwdlib = {extras = ["argon2", "bcrypt"], version = "^0.2.0"}
+
 [tool.poetry.extras]
 sqla = ["sqlalchemy"]
+auth = ["pwdlib"]
 
 [build-system]
 requires = ["poetry-core"]
