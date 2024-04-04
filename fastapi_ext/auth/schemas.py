@@ -10,3 +10,8 @@ UpdateIdentitySchema = Identity.update_model_schema()
 class RegisterIdentity(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
+
+class AuthorizeRequest(BaseModel):
+    email: EmailStr
+    password: str
+

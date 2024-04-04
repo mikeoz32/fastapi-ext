@@ -16,7 +16,7 @@ class LifespanManager:
         self,
         name: str,
         init: Callable[..., TypedDict],
-        dispose: Optional[Callable[..., None]],
+        dispose: Optional[Callable[..., None]] = None,
     ):
         self._hooks[name] = Lifespan(init=init, dispose=dispose)
 
@@ -28,7 +28,8 @@ class LifespanManager:
 
     async def dispose(self, state: TypedDict):
         for name, span in self._hooks.items():
-            await span["dispose"](state[name])
+            if span["dispose"] is not None:
+                await span["dispose"](state[name])
 
 
 lifespan_manager = LifespanManager()

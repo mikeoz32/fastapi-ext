@@ -5,6 +5,7 @@
     "fastapi_ext.auth"
   ],
   "sqla": {
-    "database_uri": "sqlite+aiosqlite://"
+    "database_uri": "sqlite+aiosqlite://",
+    "init_tables":"drop_create"
   }
 }

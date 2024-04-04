@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from fastapi_ext.settings import settings
 
 from fastapi_ext.sqla.engine import create_async_session_maker, create_engine
+from fastapi_ext.sqla.model import Base, BaseModel
 
 
 class SqlaLifespan(TypedDict):
@@ -20,6 +21,10 @@ def create_main_async_session_maker(engine: AsyncEngine):
 
 async def sqla_init() -> SqlaLifespan:
     engine = create_main_engine()
+    if settings.sqla.init_tables == "drop_create":
+        async with engine.begin() as c:
+            await c.run_sync(Base.metadata.drop_all)
+            await c.run_sync(Base.metadata.create_all)
     session_maker = create_main_async_session_maker(engine)
     return SqlaLifespan(engine=create_main_engine(), main_async_session_maker=session_maker)
 
