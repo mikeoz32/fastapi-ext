@@ -2,7 +2,7 @@
 name = "fastapi-ext"
 version = "0.1.0"
 description = ""
-authors = ["Mike Oz<kozloffsky@hotmail.com>"]
+authors = ["Mike Oz <kozloffsky@hotmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

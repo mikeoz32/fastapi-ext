@@ -1,11 +1,11 @@
-from typing import Callable, Dict, Optional, TypedDict
+from typing import Callable, Dict, Optional, TypedDict, Any
 
 from fastapi import FastAPI
 
 
 class Lifespan(TypedDict):
-    init: Callable[..., TypedDict]
-    dispose: Optional[Callable[..., None]] = None
+    init: Callable[..., Dict]
+    dispose: Optional[Callable[[], None]]
 
 
 class LifespanManager:
@@ -15,21 +15,21 @@ class LifespanManager:
     def add_lifespan(
         self,
         name: str,
-        init: Callable[..., TypedDict],
-        dispose: Optional[Callable[..., None]] = None,
+        init: Callable[..., Any],
+        dispose: Optional[Callable[..., Any]] = None,
     ):
         self._hooks[name] = Lifespan(init=init, dispose=dispose)
 
-    async def init(self, app: FastAPI) -> TypedDict:
+    async def init(self, app: FastAPI) -> Dict:
         result = dict()
         for name, span in self._hooks.items():
-            result[name] = await span["init"]()
+            result[name] = await span["init"]() # type: ignore
         return result
 
-    async def dispose(self, state: TypedDict):
+    async def dispose(self, state: Dict):
         for name, span in self._hooks.items():
             if span["dispose"] is not None:
-                await span["dispose"](state[name])
+                await span["dispose"](state[name]) # type: ignore
 
 
 lifespan_manager = LifespanManager()
