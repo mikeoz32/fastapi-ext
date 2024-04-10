@@ -14,7 +14,7 @@ def init_apps(apps: List[AppInfo]):
     for app in apps:
         prefixes[app.name] = ChoiceLoader([PackageLoader(app.path)])
 
-    return Jinja2Templates(env=Environment(loader=PrefixLoader(prefixes)))
+    return Jinja2Templates(env=Environment(loader=PrefixLoader(prefixes), extensions=['jinja2.ext.debug']))
 
 
 def templates_init(apps: List[AppInfo]):

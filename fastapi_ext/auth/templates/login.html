@@ -1,1 +1,26 @@
-<h1>AUTH!!</h1>
+<h1>
+  Login
+</h1>
+<form method="post">
+  <div>
+    <input type="email" name="email"
+      {% if form and form.email %}
+        value="{{form.email}}"
+      {% endif %}
+    />
+    {% if form.errors('email') %}
+    <div>{{ form.errors('email') }}</div>
+    {% endif %}
+  </div>
+  <div>
+    <input type="password" name="password" />
+    {% if form.errors('password') %}
+    <div>{{ form.errors('password')}}</div>
+    {% endif %}
+  </div>
+  <input type="submit" value="Login" />
+
+    {% if auth_error %}
+    <div>{{ auth_error }}</div>
+    {% endif %}
+</form>
