@@ -1,4 +1,5 @@
 from typing import Any, TypedDict
+from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncEngine
 from fastapi_ext.settings import settings
 
@@ -19,7 +20,7 @@ def create_main_engine() -> AsyncEngine:
 def create_main_async_session_maker(engine: AsyncEngine):
     return create_async_session_maker(engine)
 
-async def sqla_init() -> SqlaLifespan:
+async def sqla_init(app: FastAPI) -> SqlaLifespan:
     engine = create_main_engine()
     if settings.sqla.init_tables == "drop_create":
         async with engine.begin() as c:

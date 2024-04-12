@@ -8,13 +8,13 @@
         value="{{form.email}}"
       {% endif %}
     />
-    {% if form.errors('email') %}
+    {% if form and form.errors('email') %}
     <div>{{ form.errors('email') }}</div>
     {% endif %}
   </div>
   <div>
     <input type="password" name="password" />
-    {% if form.errors('password') %}
+    {% if form and form.errors('password') %}
     <div>{{ form.errors('password')}}</div>
     {% endif %}
   </div>

@@ -36,6 +36,13 @@ def create_app(
 
     apps = [load_app(app) for app in settings.apps]
 
+    for info in apps:
+        if info.lifespan and hasattr(info.lifespan, 'init'):
+            dispose = None
+            if hasattr(info.lifespan, 'dispose'):
+                dispose = info.lifespan.dispose
+            lifespan_manager.add_lifespan(info.name, info.lifespan.init, dispose)
+
     lifespan_manager.add_lifespan("templates", templates_init(apps))
 
     if sqla is not None:
@@ -45,6 +52,8 @@ def create_app(
     app = FastAPI(debug=debug, lifespan=lifespan)
 
     for info in apps:
+        if info.lifespan and hasattr(info.lifespan, 'init_app'):
+            info.lifespan.init_app(app)
         if info.router:
             app.include_router(router=info.router, prefix=f"/{info.name}")
     return app

@@ -12,13 +12,16 @@ templates:Optional[Jinja2Templates] = None
 def init_apps(apps: List[AppInfo]):
     prefixes = dict()
     for app in apps:
-        prefixes[app.name] = ChoiceLoader([PackageLoader(app.path)])
+        try:
+            prefixes[app.name] = ChoiceLoader([PackageLoader(app.path)])
+        except ValueError:
+            print(f"{app.name} does not support templates")
 
     return Jinja2Templates(env=Environment(loader=PrefixLoader(prefixes), extensions=['jinja2.ext.debug']))
 
 
 def templates_init(apps: List[AppInfo]):
-    async def hook():
+    async def hook(app):
         return init_apps(apps)
     return hook
 

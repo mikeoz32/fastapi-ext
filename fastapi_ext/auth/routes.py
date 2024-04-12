@@ -1,5 +1,5 @@
 from typing import Annotated, Any, List
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, EmailStr, Field, ValidationError
 from fastapi_ext.auth.schemas import (
@@ -16,6 +16,7 @@ from fastapi_ext.auth.services import (
 )
 from fastapi_ext.auth.token import get_identity_claims, jwt_encode
 from fastapi_ext.forms import FormBase, FormValidationException
+from fastapi_ext.session.di import Session
 from fastapi_ext.templating import get_templates
 
 router = APIRouter()
@@ -54,8 +55,12 @@ class LoginForm(FormBase):
 
 @router.get("/login")
 async def login(
-    request: Request, templates: Annotated[Jinja2Templates, Depends(get_templates)]
+    request: Request,
+    response: Response,
+    templates: Annotated[Jinja2Templates, Depends(get_templates)],
+    session: Annotated[Any, Session(name="login_session")],
 ):
+    print(session)
     response = templates.TemplateResponse(request, "auth/login.html")
     return response
 
@@ -72,11 +77,9 @@ async def post_login(
         try:
             identity = await service.authorize(email=form.email, password=form.password)
         except IdentityBadCredentialsException as e:
-            scope['auth_error'] = str(e)
+            scope["auth_error"] = str(e)
 
     scope["form"] = form
-    print(form.is_valid())
-    print(form.errors())
 
     response = templates.TemplateResponse(request, "auth/login.html", context=scope)
     return response

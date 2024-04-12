@@ -15,5 +15,10 @@ class AppInfo:
         except Exception:
             self.router = None
 
+        try:
+            self.lifespan = mod.lifespan
+        except Exception:
+            self.lifespan = None
+
     def __repr__(self) -> str:
-        return f"AppInfo(router={self.router})"
+        return f"AppInfo(router={self.router}, lifespan={self.lifespan})"

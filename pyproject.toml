@@ -1,9 +1,12 @@
 [tool.poetry]
-name = "fastapi-ext"
-version = "0.1.0"
+name = "fapi-ext"
+version = "0.1.1"
 description = ""
 authors = ["Mike Oz <kozloffsky@hotmail.com>"]
 readme = "README.md"
+packages = [
+  { include = "fastapi_ext" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"

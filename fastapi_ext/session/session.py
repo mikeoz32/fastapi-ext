@@ -1,10 +1,11 @@
 from typing import Annotated, Any, Optional, Protocol, TypeVar
 from typing_extensions import Doc
-from fastapi import Request
-from dataclasses import Field, dataclass
+from fastapi import Request, Response, params
+from fastapi.encoders import jsonable_encoder
 from uuid import UUID, uuid4
 
 from jose import jwt
+from pydantic import BaseModel, Field
 
 ST = TypeVar("ST")
 
@@ -13,8 +14,18 @@ class SessionStorage(Protocol[ST]):
     ...
 
 
-@dataclass
-class SessionId:
+class InMemorySessionStorage:
+    def __init__(self) -> None:
+        self._session_data = dict()
+
+    async def save(self, session_id, data):
+        self._session_data[session_id] = data
+
+    async def get(self, session_id):
+        return self._session_data.get(session_id)
+
+
+class SessionId(BaseModel):
     session_id: UUID = Field(default_factory=uuid4)
 
 
@@ -23,22 +34,88 @@ class JWSSigner:
         return jwt.encode(session_id.__dict__, "secret", algorithm="HS256")
 
 
-class Session:
-    def __init__(
-        self,
-        *,
-        cookie_name: Annotated[Optional[str], Doc("")] = None,
-        cookie_auto_create: Annotated[
-            Optional[bool], Doc("Initialize cookie without data")
-        ] = None,
-    ) -> None:
-        self._cookie_name = cookie_name or "session_cookie_name"
-        self._cookie_auto_create = cookie_auto_create or True
+# class Session:
+#     def __init__(
+#         self,
+#         *,
+#         name: Annotated[str, Doc("")],
+#         auto_create: Annotated[
+#             Optional[bool], Doc("Initialize cookie without data")
+#         ] = None,
+#     ) -> None:
+#         self._name = name
+#         self._auto_create = auto_create or True
+#         self._storage = InMemorySessionStorage()
+#         self._session_id = None
+#
+#     async def __call__(self, request: Request, response: Response) -> Any:
+#         signature = request.cookies.get(self._name)
+#
+#         if signature is None:
+#             session_id = SessionId()
+#             signature = jwt.encode(jsonable_encoder(session_id.model_dump()), "secret", algorithm="HS256")
+#             response.set_cookie(key=self._name, value=signature, domain="http://localhost:8000", samesite=None)
+#             print(signature)
+#             await self._storage.save(session_id.session_id, {})
+#
+#         data = jwt.decode(signature, "secret", algorithms=["HS256"])
+#         self.session_id = data.get('session_id')
+#
+#         return self
+#
+#     async def data(self):
+#         return self._storage.get(self.session_id)
 
-    async def __call__(self, request: Request) -> Any:
-        signature = request.cookies.get(self._cookie_name)
+
+class Session:
+    def __init__(self, name: str, id: UUID) -> None:
+        self.name = name
+        self.id = id
+
+
+class SessionManager:
+    def __init__(self) -> None:
+        self._sessions = dict()
+        self._storage = InMemorySessionStorage()
+
+    async def get_session(self, *, session_name: str, request: Request):
+        session = await self.get_session_from_request(session_name=session_name, request=request)
+
+        if session is None:
+            session = Session(name=session_name, id=uuid4())
+            await self._storage.save(str(session.id), session)
+
+        print(session.id)
+        self._sessions[session_name] = session
+        return session
+
+    async def get_session_from_request(self, *, session_name: str, request:Request):
+        signature = request.cookies.get(session_name)
 
         if signature is None:
-            return self 
+            return None
 
-        return self
+        data = None
+        try:
+            data = jwt.decode(signature, "secret")
+        except Exception as e:
+            print(e)
+            return None
+
+        session_id = data.get('session_id')
+
+        if session_id is None:
+            return None
+
+        session = await self._storage.get(session_id)
+
+        return session
+
+
+
+    async def flush(self, response: Response):
+        for name, session in self._sessions.items():
+            signature = jwt.encode(dict(session_id=str(session.id)), "secret", algorithm="HS256")
+            response.set_cookie(name, signature)
+
+

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request, Response
 from fastapi_ext.auth.password import hash_password, verify_password 
 
 from fastapi_ext.auth.repositories import IdentityRepository
@@ -45,3 +45,7 @@ class AuthenticationService:
             raise IdentityBadCredentialsException()
         return existing
 
+
+class AuthSessionService:
+    def __init__(self, request: Request) -> None:
+        pass

@@ -1,4 +1,6 @@
+from datetime import datetime
 from typing import Annotated, TypedDict
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from fastapi_ext.sqla.model import Base, CreatedUpdatedAtMixin, IDMixin
 from fastapi_ext.sqla.schema import AutoSchemaMixin
@@ -19,3 +21,10 @@ class Identity(IDMixin, CreatedUpdatedAtMixin, AutoSchemaMixin, Base):
     password_hash: Mapped[str]
     email_verified: Mapped[Annotated[bool, mapped_column(default=False)]]
     is_active: Mapped[Annotated[bool, mapped_column(default=True)]]
+
+
+class AuthSession(IDMixin, CreatedUpdatedAtMixin, AutoSchemaMixin, Base):
+    __tablename__ = "auth_session"
+
+    identity_id: Mapped[Annotated[int, mapped_column(ForeignKey('identity.id'), nullable=False)]]
+    expires: Mapped[datetime]

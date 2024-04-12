@@ -23,7 +23,7 @@ class LifespanManager:
     async def init(self, app: FastAPI) -> Dict:
         result = dict()
         for name, span in self._hooks.items():
-            result[name] = await span["init"]() # type: ignore
+            result[name] = await span["init"](app) # type: ignore
         return result
 
     async def dispose(self, state: Dict):
