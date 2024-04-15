@@ -1,4 +1,4 @@
-from typing import Annotated, Any, List
+from typing import Annotated, Any, Dict, List
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, EmailStr, Field, ValidationError
@@ -60,7 +60,6 @@ async def login(
     templates: Annotated[Jinja2Templates, Depends(get_templates)],
     session: Annotated[Any, Session(name="login_session")],
 ):
-    print(session)
     response = templates.TemplateResponse(request, "auth/login.html")
     return response
 
@@ -70,12 +69,14 @@ async def post_login(
     request: Request,
     templates: Annotated[Jinja2Templates, Depends(get_templates)],
     service: Annotated[AuthenticationService, Depends()],
+    session: Annotated[Dict, Session(name="auth_session")],
 ):
     scope = dict()
     form = await LoginForm.validate_request(request)
     if form.is_valid():
         try:
             identity = await service.authorize(email=form.email, password=form.password)
+            session['user_id'] = identity
         except IdentityBadCredentialsException as e:
             scope["auth_error"] = str(e)
 

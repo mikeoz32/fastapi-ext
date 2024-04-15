@@ -68,9 +68,30 @@ class JWSSigner:
 
 
 class Session:
-    def __init__(self, name: str, id: UUID) -> None:
+    def __init__(self,* ,name: str, id: UUID) -> None:
         self.name = name
         self.id = id
+        self._modified = False
+        self._data = dict()
+    
+    def modified(self):
+        return self._modified
+
+    def __repr__(self) -> str:
+        return f"Session(name={self.name}, id={self.id}, modified={self._modified}, data={self._data})"
+    
+    def __getitem__(self, key):
+        return  self._data.get(key)
+
+    def __setitem__(self, key, val):
+        self._modified = True
+        self._data[key] = val
+
+    def get(self, key):
+        return self._data.get(key)
+
+    def keys(self):
+        return self._data.keys()
 
 
 class SessionManager:
@@ -115,6 +136,8 @@ class SessionManager:
 
     async def flush(self, response: Response):
         for name, session in self._sessions.items():
+            if session.modified():
+                await self._storage.save(str(session.id), session)
             signature = jwt.encode(dict(session_id=str(session.id)), "secret", algorithm="HS256")
             response.set_cookie(name, signature)
 
