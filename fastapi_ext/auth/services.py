@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends, Request, Response
+from fastapi_ext.auth.models import Identity
 from fastapi_ext.auth.password import hash_password, verify_password 
 
 from fastapi_ext.auth.repositories import IdentityRepository
@@ -37,7 +38,7 @@ class AuthenticationService:
         
         return entity
 
-    async def authorize(self, *, email: str, password: str):
+    async def authorize(self, *, email: str, password: str) -> Identity:
         existing = await self.identities.get_by_email(email=email)
         if existing is None:
             raise IdentityBadCredentialsException()

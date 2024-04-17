@@ -76,7 +76,7 @@ async def post_login(
     if form.is_valid():
         try:
             identity = await service.authorize(email=form.email, password=form.password)
-            session['user_id'] = identity
+            session['identity_id'] = identity.id
         except IdentityBadCredentialsException as e:
             scope["auth_error"] = str(e)
 
