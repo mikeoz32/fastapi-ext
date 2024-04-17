@@ -2,7 +2,7 @@ import contextlib
 from typing import Annotated, Optional
 from typing_extensions import Doc
 from fastapi import FastAPI
-from fastapi_ext.appinfo import AppInfo
+from fastapi_ext.appinfo import AppInfo, load_apps
 from fastapi_ext.settings import settings
 from fastapi_ext.lifespan import lifespan_manager
 from fastapi_ext.sqla.lifespan import sqla_dispose, sqla_init
@@ -19,11 +19,6 @@ async def lifespan(app: FastAPI):
 
 
 
-def load_app(app: str) -> AppInfo:
-    info = AppInfo(app)
-    print(info)
-    return info
-
 def create_app(
     debug: Annotated[bool, Doc("")] = False, title: Annotated[Optional[str], Doc("")] = None
 ) -> FastAPI:
@@ -34,7 +29,7 @@ def create_app(
 
     sqla = settings.sqla
 
-    apps = [load_app(app) for app in settings.apps]
+    apps = load_apps()
 
     for info in apps:
         if info.lifespan and hasattr(info.lifespan, 'init'):
