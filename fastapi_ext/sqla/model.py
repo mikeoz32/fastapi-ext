@@ -62,6 +62,7 @@ class TimestamableMixin(BaseModel):
 
 M = TypeVar("M", bound=DeclarativeBase)
 M_ID = TypeVar("M_ID", bound=IDMixin)
+M_UID = TypeVar("M_UID", bound=UUIDIDMixin)
 M_TS = TypeVar("M_TS", bound=TimestamableMixin)
 
 __all__ = [

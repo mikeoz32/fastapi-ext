@@ -19,6 +19,8 @@ from fastapi_ext.forms import FormBase, FormValidationException
 from fastapi_ext.session.di import Session
 from fastapi_ext.templating import get_templates
 
+from starlette.endpoints import HTTPEndpoint
+
 router = APIRouter()
 
 
