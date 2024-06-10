@@ -1,98 +1,35 @@
-from typing import Annotated, Any, Dict, List
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, EmailStr, Field, ValidationError
-from fastapi_ext.auth.schemas import (
-    AuthorizeRequest,
-    CreateIdentitySchema,
-    IdentitySchema,
-    RegisterIdentity,
-)
+from typing import Annotated
+from aiopenid.integrations.fastapi import OAuth2AuthorizationCodeCallback
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import RedirectResponse
 
-from fastapi_ext.auth.services import (
-    AuthenticationService,
-    IdentityAlreadyExistsException,
-    IdentityBadCredentialsException,
-)
-from fastapi_ext.auth.token import get_identity_claims, jwt_encode
-from fastapi_ext.forms import FormBase, FormValidationException
-from fastapi_ext.session.di import Session
-from fastapi_ext.templating import get_templates
+from fastapi_ext.auth.repositories import AccountRepository
+from fastapi_ext.auth.di import client
 
-from starlette.endpoints import HTTPEndpoint
 
 router = APIRouter()
 
 
-@router.post("/token")
-async def get_auth_token(
-    request: AuthorizeRequest, service: Annotated[AuthenticationService, Depends()]
-):
-    try:
-        identity = await service.authorize(
-            email=request.email, password=request.password
-        )
-    except IdentityBadCredentialsException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    token = jwt_encode(get_identity_claims(identity))
-    return token
+oauth_callback = OAuth2AuthorizationCodeCallback(client)
 
 
-@router.post("/register")
-async def create_identity(
-    identity: RegisterIdentity, service: Annotated[AuthenticationService, Depends()]
-):
-    try:
-        return await service.create_identity(
-            email=identity.email, password=identity.password
-        )
-    except IdentityAlreadyExistsException as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
-
-
-class LoginForm(FormBase):
-    email: EmailStr
-    password: str = Field(..., min_length=1)
-
-
-@router.get("/login")
-async def login(
+@router.get("/oauth-callback", name="oauth-callback")
+async def oauth_callback(
     request: Request,
-    response: Response,
-    templates: Annotated[Jinja2Templates, Depends(get_templates)],
-    session: Annotated[Any, Session(name="login_session")],
+    accounts: Annotated[AccountRepository, Depends()] = None,
+    token=Depends(oauth_callback),
 ):
-    response = templates.TemplateResponse(request, "auth/login.html")
+    token_info = client.decode_token(token["access_token"])
+    email = token_info.get("email")
+    id = token_info.get("sub")
+    await accounts.create_if_not_exists(id, email)
+    response = RedirectResponse(url=f"{request.base_url}app")
+    response.set_cookie(key="token", value=token["access_token"])
     return response
 
 
-@router.post("/login")
-async def post_login(
-    request: Request,
-    templates: Annotated[Jinja2Templates, Depends(get_templates)],
-    service: Annotated[AuthenticationService, Depends()],
-    session: Annotated[Dict, Session(name="auth_session")],
-):
-    scope = dict()
-    form = await LoginForm.validate_request(request)
-    if form.is_valid():
-        try:
-            identity = await service.authorize(email=form.email, password=form.password)
-            session['identity_id'] = identity.id
-        except IdentityBadCredentialsException as e:
-            scope["auth_error"] = str(e)
-
-    scope["form"] = form
-
-    response = templates.TemplateResponse(request, "auth/login.html", context=scope)
-    return response
-
-
-@router.get("/logout")
-async def logout():
-    ...
-
-
-@router.get("/identities", response_model=List[IdentitySchema])
-async def list_identities():
-    ...
+@router.get("/")
+async def authenticate(request: Request):
+    return RedirectResponse(
+        url=client.get_authorization_url(redirect_url=request.url_for("oauth-callback"))
+    )

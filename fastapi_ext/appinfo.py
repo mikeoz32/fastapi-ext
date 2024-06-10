@@ -7,6 +7,7 @@ from fastapi_ext.settings import settings
 class AppInfo:
     def __init__(self, path: str) -> None:
         mod = importlib.import_module(path)
+        self._mod = mod
 
         self.name = mod.__name__
         self.dir = os.path.dirname(mod.__file__)
@@ -25,7 +26,7 @@ class AppInfo:
     @property
     def cli(self):
         try:
-            return mod.cli.app
+            return self._mod.cli.app
         except:
             return None
 

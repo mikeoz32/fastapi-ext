@@ -3,3 +3,5 @@ site_name: FastAPI Extensions
 nav:
   - Home: 'index.md'
   - Installation: 'install.md'
+  - Session: 'session.md'
+  - Auth: 'auth.md'

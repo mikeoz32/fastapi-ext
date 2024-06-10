@@ -1,10 +1,12 @@
-from typing import Literal
 from fastapi_ext.settings import Settings
 
+
 class AuthSettings(Settings):
-    secret_key: str = "change_this_secret"
-    algorithm: Literal["HS256"] = "HS256"
-    access_token_expire: int = 30
-    auth_session_name: str = "auth_session"
+    client_id: str = "webapi"
+    client_secret: str = "AngtmsOWvi7fnp3xUruLMbdWlkk7s4iL"
+    openid_configuration_endpoint: str = (
+        "https://auth.cekocloud.com/realms/industry-dev/.well-known/openid-configuration"
+    )
+
 
 auth_settings = AuthSettings()

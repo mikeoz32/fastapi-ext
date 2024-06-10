@@ -1,30 +1,38 @@
-from datetime import datetime
-from typing import Annotated, TypedDict
-from sqlalchemy import ForeignKey
+from typing import Annotated
+from typing_extensions import Doc
+from fastapi_ext.sqla.model import Base, CreatedUpdatedAtMixin
 from sqlalchemy.orm import Mapped, mapped_column
-from fastapi_ext.sqla.model import Base, CreatedUpdatedAtMixin, IDMixin, UUIDIDMixin
-from fastapi_ext.sqla.schema import AutoSchemaMixin
-
-"""
-# Authentication module
-
-## Identity
-
-An identity to authenticate (think user or profile) have only data related to
-authentication, like email, username, password_hash/salt and links to OpenID identities
-"""
-
-class Identity(IDMixin, CreatedUpdatedAtMixin, AutoSchemaMixin, Base):
-    __tablename__ = "identity"
-
-    email: Mapped[Annotated[str, mapped_column(index=True, unique=True)]]
-    password_hash: Mapped[str]
-    email_verified: Mapped[Annotated[bool, mapped_column(default=False)]]
-    is_active: Mapped[Annotated[bool, mapped_column(default=True)]]
 
 
-class AuthSession(UUIDIDMixin, CreatedUpdatedAtMixin, AutoSchemaMixin, Base):
-    __tablename__ = "auth_session"
+class Account(CreatedUpdatedAtMixin, Base):
+    __tablename__ = "accounts"
 
-    identity_id: Mapped[Annotated[int, mapped_column(ForeignKey('identity.id'), nullable=False)]]
-    expires: Mapped[datetime]
+    identity_id: Mapped[
+        Annotated[
+            str,
+            mapped_column(primary_key=True, nullable=False),
+            Doc("""
+                Id of keycloak user (external to this api identity) 
+                                                                                            """),
+        ]
+    ]
+    name: Mapped[
+        Annotated[
+            str,
+            mapped_column(unique=True, index=True),
+            Doc("""
+                Profile name displayed in url, not taken from username in external id, 
+                could be changed by user, must be unique
+                                                                            """),
+        ]
+    ]
+    active: Mapped[
+        Annotated[
+            bool,
+            mapped_column(default=True),
+            Doc("""
+                Is account active, could be disabled by user (deleted, suspended) or by system or 
+                administrators
+                                                                    """),
+        ]
+    ]
