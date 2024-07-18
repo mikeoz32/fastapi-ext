@@ -13,6 +13,7 @@ apps = load_apps()
 for info in apps:
     cli = info.cli
     if cli:
+        print(cli)
         app.add_typer(cli, name=info.name)
 
 if __name__ == "__main__":

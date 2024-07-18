@@ -16,7 +16,7 @@ Some features
 
 ## Requirements
 
-Python 3.9+
+Python 3.10+
 
 ---
 
@@ -59,7 +59,7 @@ async def lifespan(app: FastAPI):
 Now you could create models and repositories
 
 ```Python
-from fastapi-ext.sqla.model import Base, IDMixin, CreatedUpdatedAtMixin
+from fastapi_ext.sqla.model import Base, IDMixin, CreatedUpdatedAtMixin
 
 class Post(IDMixin, CreatedUpdatedAtMixin, Base):
     title: Mapped[str]
