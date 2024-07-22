@@ -3,3 +3,10 @@ site_name: FastAPI Extensions
 nav:
   - Home: 'index.md'
   - Installation: 'install.md'
+  - Auth: 'auth.md'
+  - Session: 'session.md'
+
+markdown_extensions:
+  - abbr
+  - attr_list
+  - def_list
