@@ -35,3 +35,13 @@ and validate tokens and add Identity object to request
 ### Identity
 
 Represents external identity from identity provider. 
+=======
+Authentication is provided by integration with external OpenID service of choice.
+
+## Configuration
+
+Add `fastapi_ext.auth` to applications in `config.json`
+
+# OpenID
+
+Optional OpenID application that provides some OpenID features compatible with fastapi-ext authentication

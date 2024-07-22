@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fapi-ext"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["Mike Oz <kozloffsky@hotmail.com>"]
 readme = "README.md"
@@ -12,7 +12,7 @@ packages = [
 fext = "fastapi_ext.cli.main:app"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 fastapi = "^0.110.0"
 pydantic = "^2.6.4"
 pydantic-settings = "^2.2.1"
@@ -22,6 +22,7 @@ mkdocs = "^1.5.3"
 python-multipart = "^0.0.9"
 typer = "^0.12.3"
 asyncclick = "^8.1.7.2"
+aiopenid = {git = "https://github.com/mikeoz32/aiopenid.git"}
 
 
 [tool.poetry.group.sqla.dependencies]
@@ -35,6 +36,7 @@ uvicorn = "^0.29.0"
 
 [tool.poetry.group.test.dependencies]
 aiosqlite = "^0.20.0"
+pytest = "^8.2.0"
 
 
 [tool.poetry.group.auth.dependencies]
@@ -44,6 +46,9 @@ python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 [tool.poetry.extras]
 sqla = ["sqlalchemy"]
 auth = ["pwdlib"]
+
+[tool.poetry.plugins.pytest11]
+fastapi_ext_pytest = "fastapi_ext.pytest.plugin"
 
 [build-system]
 requires = ["poetry-core"]

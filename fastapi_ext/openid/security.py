@@ -1,8 +1,10 @@
-from typing import Optional
+
+from typing import Dict, Optional
 from fastapi import HTTPException, Request, status
 from fastapi.security.base import SecurityBase
 
-from fastapi_ext.auth.settings import auth_settings
+from fastapi_ext.openid.settings import openid_settings
+from fastapi_ext.session.session import SessionManager
 
 class HTTPSession(SecurityBase):
 
@@ -15,7 +17,7 @@ class HTTPSession(SecurityBase):
         self._login_route = login_route
 
     async def __call__(self, request: Request):
-        name = auth_settings.auth_session_name
+        name = openid_settings.auth_session_name
 
         manager: SessionManager = request.state.session['manager']
         session: Dict = await manager.get_session(session_name=name, request=request)
