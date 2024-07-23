@@ -28,7 +28,7 @@ from starlette.endpoints import HTTPEndpoint
 router = APIRouter()
 
 
-@router.get("/oauth/authorize")
+@router.get("/oauth/authorize", name="oauth:authorize")
 async def get_authorize(
     request: Request,
     oauth_request: Annotated[OAuth2AuthorizaRequest, Depends()],
@@ -112,7 +112,7 @@ async def post_login(
     return response
 
 
-@router.get("/logout")
+@router.get("/logout", name="oauth:logout")
 async def logout(): ...
 
 

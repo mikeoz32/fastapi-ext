@@ -5,7 +5,6 @@ from fastapi import FastAPI
 from fastapi_ext.appinfo import AppInfo, load_apps
 from fastapi_ext.settings import settings
 from fastapi_ext.lifespan import lifespan_manager
-from fastapi_ext.sqla.lifespan import sqla_dispose, sqla_init
 
 from fastapi_ext.templating import templates_init
 
@@ -27,7 +26,7 @@ def create_app(
 
     title = title or settings.title
 
-    sqla = settings.sqla
+    # sqla = settings.sqla
 
     apps = load_apps()
 
@@ -40,17 +39,19 @@ def create_app(
 
     lifespan_manager.add_lifespan("templates", templates_init(apps))
 
-    if sqla is not None:
-        lifespan_manager.add_lifespan("sqla", sqla_init, sqla_dispose)
+    # if sqla is not None:
+    #     lifespan_manager.add_lifespan("sqla", sqla_init, sqla_dispose)
 
 
-    app = FastAPI(debug=debug, lifespan=lifespan)
+    app = FastAPI(lifespan=lifespan)
 
     for info in apps:
         if info.lifespan and hasattr(info.lifespan, 'init_app'):
             info.lifespan.init_app(app)
-        if info.router:
-            app.include_router(router=info.router, prefix=f"/{info.name}")
+        # if info.router:
+        #     app.include_router(router=info.router, prefix=f"/{info.name}")
+        if info.app:
+            app.mount(f"/{info.name}",info.app)
     return app
 
 

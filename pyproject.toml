@@ -37,6 +37,8 @@ uvicorn = "^0.29.0"
 [tool.poetry.group.test.dependencies]
 aiosqlite = "^0.20.0"
 pytest = "^8.2.0"
+pytest-asyncio = "^0.23.8"
+asgi-lifespan = "^2.1.0"
 
 
 [tool.poetry.group.auth.dependencies]

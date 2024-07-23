@@ -12,6 +12,16 @@ router = APIRouter()
 
 oauth_callback = OAuth2AuthorizationCodeCallback(client)
 
+@router.get("/check")
+async def check(request: Request,
+                accounts: Annotated[AccountRepository, Depends()] = None):
+    try:
+        await accounts.create_if_not_exists("13", "test2@test.com")
+        return await accounts.all()
+    except Exception as e:
+        print(e)
+    
+
 
 @router.get("/oauth-callback", name="oauth-callback")
 async def oauth_callback(
