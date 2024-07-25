@@ -1,6 +1,6 @@
 
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Dict, Mapping, cast
 from fastapi import FastAPI
 import pytest
 import pytest_asyncio
@@ -10,7 +10,11 @@ from sqlalchemy.sql.elements import True_
 from fastapi_ext.sqla.di import get_main_async_session
 from fastapi_ext.sqla.engine import create_engine
 from fastapi_ext.sqla.lifespan import migrate
+from fastapi_ext.sqla.model import M
 from fastapi_ext.sqla.settings import sqla_settings
+
+
+ModelMapping = Mapping[str, M]
 
 @pytest_asyncio.fixture(scope="session")
 async def test_database():
@@ -57,6 +61,24 @@ async def main_session(main_engine: AsyncEngine) -> AsyncGenerator[AsyncSession,
 def sqla_dependency_overrides(dependency_overrides, main_session):
     print("Overriding!")
     dependency_overrides[get_main_async_session] = lambda: main_session
+
+
+@pytest.fixture
+def data_mapping() -> Dict[str, ModelMapping]:
+    return dict()
+
+@pytest_asyncio.fixture
+async def test_data(main_engine, data_mapping: Dict[str, ModelMapping]):
+    async with main_engine.begin() as connection:
+        async with AsyncSession(bind=connection, expire_on_commit=False) as session:
+            for model in data_mapping.values():
+                for object in cast(ModelMapping, model).values():
+                    session.add(object)
+            await session.commit()
+
+            for model in data_mapping.values():
+                for object in cast(ModelMapping, model).values():
+                    await session.refresh(object)
 
 class TestConfig():
 

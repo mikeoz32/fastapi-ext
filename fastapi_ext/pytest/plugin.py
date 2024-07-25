@@ -1,5 +1,5 @@
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
-from typing import Callable
+from typing import Callable, Dict, Mapping
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import FastAPI
 import httpx
@@ -8,7 +8,10 @@ import pytest_asyncio
 import pytest
 
 from fastapi_ext.appinfo import load_apps
+from fastapi_ext.sqla.model import M
 
+
+ModelMapping = Mapping[str, M]
 
 HTTPClientGeneratorType = Callable[
     [FastAPI], AbstractAsyncContextManager[httpx.AsyncClient]
@@ -28,6 +31,21 @@ def dependency_overrides():
     overrides = dict()
     return overrides
 
+def data_mapping() -> Dict:
+    ...
+
+@pytest_asyncio.fixture
+async def test_data(main_engine, data_mapping):
+    async with main_engine.begin() as connection:
+        async with AsyncSession(bind=connection, expire_on_commit=False) as session:
+            for model in data_mapping.values():
+                for object in cast(ModelMapping, model).values():
+                    session.add(object)
+            await session.commit()
+
+            for model in data_mapping.values():
+                for object in cast(ModelMapping, model).values():
+                    await session.refresh(object)
 
 @pytest_asyncio.fixture
 async def test_client_generator(apps, dependency_overrides) -> HTTPClientGeneratorType:

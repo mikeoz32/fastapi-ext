@@ -7,6 +7,7 @@ class AuthSettings(Settings):
     openid_configuration_endpoint: str = (
         "https://auth.cekocloud.com/realms/industry-dev/.well-known/openid-configuration"
     )
+    redirect_path: str = "app"
 
 
 auth_settings = AuthSettings()
