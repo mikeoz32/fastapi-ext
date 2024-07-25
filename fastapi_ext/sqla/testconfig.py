@@ -79,6 +79,7 @@ async def test_data(main_engine, data_mapping: Dict[str, ModelMapping]):
             for model in data_mapping.values():
                 for object in cast(ModelMapping, model).values():
                     await session.refresh(object)
+            yield data_mapping
 
 class TestConfig():
 
