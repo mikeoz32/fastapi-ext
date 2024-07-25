@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fapi-ext"
-version = "0.1.2"
+version = "0.1.3"
 description = ""
 authors = ["Mike Oz <kozloffsky@hotmail.com>"]
 readme = "README.md"
