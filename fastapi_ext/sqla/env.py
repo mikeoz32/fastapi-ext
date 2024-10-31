@@ -1,4 +1,3 @@
-
 import asyncio
 from logging.config import fileConfig
 
@@ -8,7 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from fastapi_ext.settings import settings
+from fastapi_ext.sqla.settings import sqla_settings
 from fastapi_ext.sqla.model import Base
 
 # this is the Alembic Config object, which provides
@@ -20,7 +19,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option('sqlalchemy.url', str(settings.sqla.database_uri))
+config.set_main_option("sqlalchemy.url", str(sqla_settings.database_uri))
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -52,7 +51,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        include_schemas=True
+        include_schemas=True,
     )
 
     with context.begin_transaction():
@@ -77,7 +76,6 @@ async def run_async_migrations() -> None:
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

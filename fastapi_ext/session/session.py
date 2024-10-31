@@ -1,3 +1,4 @@
+from logging import getLogger
 from typing import Annotated, Any, Optional, Protocol, TypeVar
 from typing_extensions import Doc
 from fastapi import Request, Response, params
@@ -7,11 +8,12 @@ from uuid import UUID, uuid4
 from jose import jwt
 from pydantic import BaseModel, Field
 
+logger = getLogger(__name__)
+
 ST = TypeVar("ST")
 
 
-class SessionStorage(Protocol[ST]):
-    ...
+class SessionStorage(Protocol[ST]): ...
 
 
 class InMemorySessionStorage:
@@ -68,20 +70,20 @@ class JWSSigner:
 
 
 class Session:
-    def __init__(self,* ,name: str, id: UUID) -> None:
+    def __init__(self, *, name: str, id: UUID) -> None:
         self.name = name
         self.id = id
         self._modified = False
         self._data = dict()
-    
+
     def modified(self):
         return self._modified
 
     def __repr__(self) -> str:
         return f"Session(name={self.name}, id={self.id}, modified={self._modified}, data={self._data})"
-    
+
     def __getitem__(self, key):
-        return  self._data.get(key)
+        return self._data.get(key)
 
     def __setitem__(self, key, val):
         self._modified = True
@@ -100,17 +102,19 @@ class SessionManager:
         self._storage = InMemorySessionStorage()
 
     async def get_session(self, *, session_name: str, request: Request):
-        session = await self.get_session_from_request(session_name=session_name, request=request)
+        session = await self.get_session_from_request(
+            session_name=session_name, request=request
+        )
 
         if session is None:
             session = Session(name=session_name, id=uuid4())
             await self._storage.save(str(session.id), session)
 
-        print(session.id)
+        logger.info(f"Session ID {session.id}")
         self._sessions[session_name] = session
         return session
 
-    async def get_session_from_request(self, *, session_name: str, request:Request):
+    async def get_session_from_request(self, *, session_name: str, request: Request):
         signature = request.cookies.get(session_name)
 
         if signature is None:
@@ -120,10 +124,10 @@ class SessionManager:
         try:
             data = jwt.decode(signature, "secret")
         except Exception as e:
-            print(e)
+            logger.error(e)
             return None
 
-        session_id = data.get('session_id')
+        session_id = data.get("session_id")
 
         if session_id is None:
             return None
@@ -132,13 +136,11 @@ class SessionManager:
 
         return session
 
-
-
     async def flush(self, response: Response):
         for name, session in self._sessions.items():
             if session.modified():
                 await self._storage.save(str(session.id), session)
-            signature = jwt.encode(dict(session_id=str(session.id)), "secret", algorithm="HS256")
+            signature = jwt.encode(
+                dict(session_id=str(session.id)), "secret", algorithm="HS256"
+            )
             response.set_cookie(name, signature)
-
-

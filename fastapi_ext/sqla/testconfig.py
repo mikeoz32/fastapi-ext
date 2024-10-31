@@ -1,9 +1,13 @@
-
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Dict, Mapping, cast
 from fastapi import FastAPI
-import pytest
-import pytest_asyncio
+
+try:
+    import pytest
+    import pytest_asyncio
+except:
+    pytest = {}
+    pytest_asyncio = {}
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 from sqlalchemy.sql.elements import True_
 
@@ -16,9 +20,11 @@ from fastapi_ext.sqla.settings import sqla_settings
 
 ModelMapping = Mapping[str, M]
 
+
 @pytest_asyncio.fixture(scope="session")
 async def test_database():
     uri = sqla_settings.database_uri
+
     @asynccontextmanager
     async def _test_database():
         # engine = create_async_engine("postgresql+asyncpg://postgres:postgres@localhost:5432/", echo=True)
@@ -27,6 +33,7 @@ async def test_database():
         yield uri
 
     return _test_database
+
 
 @pytest_asyncio.fixture(scope="session")
 async def main_engine(test_database):
@@ -57,6 +64,7 @@ async def main_session(main_engine: AsyncEngine) -> AsyncGenerator[AsyncSession,
     await transaction.rollback()
     await connection.close()
 
+
 @pytest.fixture(autouse=True)
 def sqla_dependency_overrides(dependency_overrides, main_session):
     print("Overriding!")
@@ -66,6 +74,7 @@ def sqla_dependency_overrides(dependency_overrides, main_session):
 @pytest.fixture
 def data_mapping() -> Dict[str, ModelMapping]:
     return dict()
+
 
 @pytest_asyncio.fixture
 async def test_data(main_engine, data_mapping: Dict[str, ModelMapping]):
@@ -81,10 +90,11 @@ async def test_data(main_engine, data_mapping: Dict[str, ModelMapping]):
                     await session.refresh(object)
             yield data_mapping
 
-class TestConfig():
 
+class TestConfig:
     def setup_dependency_overrides(self, app: FastAPI):
         print("Setting up overrides")
         app.dependency_overrides[get_main_async_session] = lambda: main_session()
+
 
 config = TestConfig()

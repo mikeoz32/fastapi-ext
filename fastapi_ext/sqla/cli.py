@@ -1,12 +1,6 @@
-import functools
-from typing import Annotated, Any, Awaitable, Callable, Optional
-
-import alembic
 from alembic.script import ScriptDirectory
-from typer import Option
 from fastapi_ext.appinfo import load_apps
 from fastapi_ext.cli import typer
-import asyncio
 from alembic import command, config
 import os
 
@@ -14,7 +8,6 @@ app = typer.Typer()
 
 cfg = config.Config(os.path.dirname(__file__) + "/alembic.ini")
 cfg.set_main_option("script_location", os.path.dirname(__file__))
-
 cfg.set_main_option("version_path_separator", ":")
 
 apps = load_apps()

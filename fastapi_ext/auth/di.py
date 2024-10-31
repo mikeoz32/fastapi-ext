@@ -21,7 +21,8 @@ async def get_token_info(
 ):
     try:
         return client.decode_token(token)
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -36,4 +37,21 @@ async def get_account(
     return account
 
 
-__all__ = ["client", "oauth_scheme", "get_token_info", "get_account"]
+async def get_or_create_account(
+    token_info: Annotated[Dict[str, Any], Depends(get_token_info)],
+    accounts: Annotated[AccountRepository, Depends()],
+):
+    account = await accounts.create_if_not_exists(
+        token_info["sub"], token_info["email"]
+    )
+
+    return account
+
+
+__all__ = [
+    "client",
+    "oauth_scheme",
+    "get_token_info",
+    "get_account",
+    "get_or_create_account",
+]

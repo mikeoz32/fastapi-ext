@@ -3,6 +3,29 @@ import os
 
 from fastapi_ext.settings import settings
 
+
+class Lifespan:
+    def __init__(self, mod) -> None:
+        self._mod = mod
+
+    @property
+    def init(self):
+        return self.get("init")
+
+    @property
+    def dispose(self):
+        return self.get("dispose")
+
+    @property
+    def init_app(self):
+        return self.get("init_app")
+
+    def get(self, name: str):
+        if self._mod and hasattr(self._mod, name):
+            return getattr(self._mod, name)
+        return None
+
+
 class AppInfo:
     def __init__(self, path: str) -> None:
         mod = importlib.import_module(path)
@@ -12,7 +35,7 @@ class AppInfo:
         self.dir = os.path.dirname(mod.__file__)
         self.path = path
 
-    def _import(self,path: str):
+    def _import(self, path: str):
         parts = path.split(".")
         mod = self._mod
         try:
@@ -25,7 +48,7 @@ class AppInfo:
 
     @property
     def lifespan(self):
-        return self._import("lifespan")
+        return Lifespan(self._import("lifespan"))
 
     @property
     def router(self):
@@ -41,7 +64,6 @@ class AppInfo:
             return f"{self.path}.testconfig"
         return None
 
-
     @property
     def cli(self):
         return self._import("cli.app")
@@ -52,5 +74,4 @@ class AppInfo:
 
 def load_apps():
     apps = [AppInfo(app) for app in settings.apps]
-    print(apps)
     return apps

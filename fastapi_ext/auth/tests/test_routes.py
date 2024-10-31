@@ -11,6 +11,7 @@ async def client(test_client_generator: HTTPClientGeneratorType) -> httpx.AsyncC
 
 
 @pytest.mark.asyncio
-async def test_authenticate(client: httpx.AsyncClient):
+async def test_authenticate(client: httpx.AsyncClient, test_data):
     response = await client.get("/check")
+    print(test_data)
     assert response.json() == 200
