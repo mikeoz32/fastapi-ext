@@ -1,12 +1,13 @@
+import os
+import sys
 from typing import Any
 from fastapi_ext.cli import typer
 
 from fastapi_ext.appinfo import load_apps
-import fastapi_ext.sqla.cli
 
 app = typer.Typer()
 
-app.add_typer(fastapi_ext.sqla.cli.app, name="sqla")
+sys.path.append(os.getcwd())
 
 apps = load_apps()
 

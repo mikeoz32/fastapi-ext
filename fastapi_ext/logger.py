@@ -13,7 +13,7 @@ LOG_LEVEL = logging.INFO
 def stdout_format(record: "Record") -> str:
     record["extra"]["extra_json"] = json.dumps(record["extra"])
     return (
-        "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
         "<level>{level: <8}</level> | "
         "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level> - "
         "{extra[extra_json]}"

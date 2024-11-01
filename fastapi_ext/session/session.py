@@ -1,14 +1,11 @@
-from logging import getLogger
-from typing import Annotated, Any, Optional, Protocol, TypeVar
-from typing_extensions import Doc
-from fastapi import Request, Response, params
-from fastapi.encoders import jsonable_encoder
+from typing import Protocol, TypeVar
 from uuid import UUID, uuid4
 
+from fastapi import Request, Response
 from jose import jwt
 from pydantic import BaseModel, Field
 
-logger = getLogger(__name__)
+from fastapi_ext.logger import logger
 
 ST = TypeVar("ST")
 

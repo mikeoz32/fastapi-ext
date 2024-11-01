@@ -13,7 +13,6 @@ from fastapi_ext.sqla.engine import (
 from alembic import command
 
 
-
 class SqlaLifespan(TypedDict):
     engine: AsyncEngine
     main_async_session_maker: Any
@@ -37,7 +36,7 @@ async def migrate(engine: AsyncEngine):
         def __execute_upgrade(conn):
             try:
                 cfg.attributes["connection"] = conn
-                command.upgrade(cfg, "head")
+                command.upgrade(cfg, "heads")
             except Exception as e:
                 logger.error(e)
 

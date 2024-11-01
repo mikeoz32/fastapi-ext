@@ -14,7 +14,7 @@ from fastapi_ext.templating import templates_init
 async def lifespan(app: FastAPI):
     init_logger()
     state = await lifespan_manager.init(app)
-    logger.debug(state)
+    logger.bind(state=list(state.keys())).info("Lifespan manager state")
     logger.info(f"{app.title} services are started")
     yield state
     await lifespan_manager.dispose(state)

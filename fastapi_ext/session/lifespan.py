@@ -1,12 +1,11 @@
-from logging import getLogger
 from typing import Any, TypedDict
 
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
+from fastapi_ext.logger import logger
 from fastapi_ext.session.session import SessionManager
 
-logger = getLogger(__name__)
 
 
 class SessionLifespan(TypedDict):

@@ -5,6 +5,7 @@ from aiopenid.integrations.fastapi import OAuth2AuthorizationCodeBearer
 from fastapi import Depends, HTTPException, status
 from fastapi_ext.auth.repositories import AccountRepository
 from fastapi_ext.auth.settings import auth_settings
+from fastapi_ext.logger import logger
 
 
 client = OpenID(
@@ -22,8 +23,9 @@ async def get_token_info(
     try:
         return client.decode_token(token)
     except Exception as e:
-        print(e)
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        logger.info("Unable to decode token")
+        logger.info(e)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e)
 
 
 async def get_account(
@@ -32,7 +34,7 @@ async def get_account(
 ):
     account = await accounts.get_by_itentity_id(token_info["sub"])
     if not account:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Account not found")
 
     return account
 
