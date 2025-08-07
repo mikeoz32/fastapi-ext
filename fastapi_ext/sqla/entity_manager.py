@@ -1,8 +1,8 @@
-from typing import Annotated, TypeVar, Union
+from typing import Annotated, Sequence, Type, TypeVar, Union
 from fastapi import Depends
-from sqlalchemy import Result, Select
+from sqlalchemy import Result, Select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, session
 
 from fastapi_ext.sqla.di import get_main_async_session
 
@@ -40,6 +40,17 @@ class AsyncEntityManager:
         except Exception as e:
             await self.session.rollback()
             raise e
+
+    async def insert_mamy(
+        self,
+        model: Type[DeclarativeBase],
+        values: Sequence[dict],
+        returning: list[str] = ["id"],
+    ):
+        stmt = insert(model).returning(*[getattr(model, f) for f in returning])
+        result = await self.session.execute(stmt, values)
+        await self.session.commit()
+        return list(result.mappings().fetchall())
 
 
 __all__ = ["AsyncEntityManager"]

@@ -6,8 +6,9 @@
     "fastapi_ext.sqla",
     "fastapi_ext.auth",
     "fastapi_ext.session",
-    "fastapi_ext.openid"
+    "fastapi_ext.openid",
+    "example"
   ],
-  "database_uri": "sqlite+aiosqlite://",
-  "init_tables":"drop_create"
+  "database_uri": "sqlite+aiosqlite:///testdb",
+  "init_tables":"migrate"
 }

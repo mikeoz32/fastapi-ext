@@ -4,9 +4,10 @@ from typing_extensions import Doc
 from uuid import UUID
 
 from fastapi import Depends
-from sqlalchemy import Result, Select, func, over, select
+from sqlalchemy import Result, Select, func, over, select, asc, desc
 from sqlalchemy.orm import joinedload
 
+from fastapi_ext.sqla.filters import Filter
 from fastapi_ext.sqla.model import M, M_ID, M_UID
 from fastapi_ext.sqla.entity_manager import AsyncEntityManager
 
@@ -55,11 +56,39 @@ class QueryBuilder(Generic[M]):
             self.statement = self.statement.offset(offset)
         return self
 
-    def where(self, where: Annotated[Optional[dict], Doc("")] = None):
-        if where:
-            for name, value in where.items():
-                attr = self._get_field(name)
-                self.statement = self.statement.where(attr == value)
+    # def where(self, where: Annotated[Optional[dict], Doc("")] = None):
+    #     if where:
+    #         for name, value in where.items():
+    #             attr = self._get_field(name)
+    #             self.statement = self.statement.where(attr == value)
+    #     return self
+
+    def order_by(self, order: Optional[List[str]] = None):
+        if order:
+            clauses = []
+            for field in order:
+                direction = asc
+                if field.startswith("-"):
+                    field = field[1:]
+                    direction = desc
+                clauses.append(direction(self._get_field(field)))
+            self.statement = self.statement.order_by(*clauses)
+        return self
+
+    def where(self, filters: Annotated[Optional[List[Filter]], Doc("")] = None):
+        if filters:
+            for f in filters:
+                self.statement = f.apply(self.statement, self.entity_type)
+        return self
+
+    def relations(self, relations: Optional[List[str]] = None):
+        if relations:
+            for rel in relations:
+                if not hasattr(self.entity_type, rel):
+                    raise ValueError(f"Unknown relation '{rel}'")
+                self.statement = self.statement.options(
+                    joinedload(getattr(self.entity_type, rel))
+                )
         return self
 
     def _get_field(self, name: str):
@@ -93,19 +122,19 @@ class BaseRepository(Generic[M]):
     async def delete(self, model: M):
         return await self.entity_manager.delete(model)
 
-    async def find(
-        self,
-        limit: Annotated[Optional[int], Doc("")] = None,
-        offset: Annotated[Optional[int], Doc("")] = None,
-        where: Annotated[Optional[Dict[str, Any]], Doc("")] = None,
-        options: SelectOptions = None,
-    ):
-        builder = QueryBuilder(self.model).limit(limit).offset(offset).where(where)
-
-        statement = builder.build()
-        statement = apply_options(statement, options)
-
-        return await self.list(statement)
+    # async def find(
+    #     self,
+    #     limit: Annotated[Optional[int], Doc("")] = None,
+    #     offset: Annotated[Optional[int], Doc("")] = None,
+    #     where: Annotated[Optional[Dict[str, Any]], Doc("")] = None,
+    #     options: SelectOptions = None,
+    # ):
+    #     builder = QueryBuilder(self.model).limit(limit).offset(offset).where(where)
+    #
+    #     statement = builder.build()
+    #     statement = apply_options(statement, options)
+    #
+    #     return await self.list(statement)
 
     async def find_one(
         self,
@@ -117,6 +146,25 @@ class BaseRepository(Generic[M]):
         statement = apply_options(statement, options)
 
         return await self.get_one_or_none(statement)
+
+    async def find(
+        self,
+        filters: List[Filter] = None,
+        order_by: List[str] = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        relations: List[str] = None,
+    ) -> List[M]:
+        stmt = (
+            QueryBuilder(self.model)
+            .where(filters or [])
+            .order_by(order_by or [])
+            .limit(limit)
+            .offset(offset)
+            .relations(relations)
+            .build()
+        )
+        return await self.list(stmt)
 
     # async def find(
     #     self,
@@ -156,6 +204,11 @@ class BaseRepository(Generic[M]):
     #             count = row[-1]
     #
     #     return results, count
+
+    def patch(self, entity: M, data: Dict) -> M:
+        for filed, value in data.items():
+            setattr(entity, filed, value)
+        return entity
 
     async def save(self, entity: M) -> M:
         return await self.manager.save(entity)

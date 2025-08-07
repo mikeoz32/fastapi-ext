@@ -3,6 +3,7 @@ from aiopenid.oauth2 import OpenID
 
 from aiopenid.integrations.fastapi import OAuth2AuthorizationCodeBearer
 from fastapi import Depends, HTTPException, status
+from fastapi_ext.auth.models import Account
 from fastapi_ext.auth.repositories import AccountRepository
 from fastapi_ext.auth.settings import auth_settings
 from fastapi_ext.logger import logger
@@ -31,7 +32,7 @@ async def get_token_info(
 async def get_account(
     token_info: Annotated[Dict[str, Any], Depends(get_token_info)],
     accounts: Annotated[AccountRepository, Depends()],
-):
+) -> Account:
     account = await accounts.get_by_itentity_id(token_info["sub"])
     if not account:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Account not found")

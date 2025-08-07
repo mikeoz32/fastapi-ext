@@ -1,5 +1,5 @@
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
-from typing import Callable, Dict, Mapping
+from typing import Callable, Dict, Mapping, cast
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import FastAPI
 import httpx
